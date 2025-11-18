@@ -32,7 +32,6 @@ MIN_INTERVAL = 1
 openai_client = None
 if OPENAI_AVAILABLE:
     api_key = os.getenv("OPENAI_API_KEY")
-    api_key = "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"
     if api_key:
         openai_client = OpenAI(api_key=api_key)
     else:
