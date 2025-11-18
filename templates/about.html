@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About - Travel Mate AI</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="bg-light">
+
+  <!-- Navigation Menu -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+      <a class="navbar-brand" href="/">
+        <i class="fas fa-globe-americas"></i> Travel Mate AI
+      </a>
+      <div class="navbar-nav ms-auto">
+        <a class="nav-link" href="/"><i class="fas fa-home"></i> Home</a>
+        <a class="nav-link active" href="/about"><i class="fas fa-info-circle"></i> About</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mt-5 mb-5">
+    <div class="row">
+      <div class="col-lg-8 mx-auto">
+        <div class="card shadow-lg">
+          <div class="card-header bg-primary text-white">
+            <h2 class="mb-0"><i class="fas fa-info-circle"></i> About Travel Mate AI</h2>
+          </div>
+          <div class="card-body p-5">
+            <h3 class="mb-4">Welcome to Travel Mate AI! 🌍</h3>
+            
+            <p class="lead">
+              Travel Mate AI is your intelligent travel planning companion that helps you create 
+              personalized itineraries and connect with fellow travelers.
+            </p>
+
+            <h4 class="mt-5 mb-3"><i class="fas fa-magic"></i> How It Works</h4>
+            <ol>
+              <li class="mb-3">
+                <strong>Plan Your Trip:</strong> Enter your travel dates and select your preferences 
+                (attractions, bars, restaurants, beaches, shopping, nature activities).
+              </li>
+              <li class="mb-3">
+                <strong>AI-Powered Schedule:</strong> Our AI creates a personalized daily itinerary 
+                based on your preferences and travel dates.
+              </li>
+              <li class="mb-3">
+                <strong>Meet Travel Companions:</strong> If you're traveling alone, we'll show you 
+                other travelers who might want to join you on your adventure!
+              </li>
+            </ol>
+
+            <h4 class="mt-5 mb-3"><i class="fas fa-star"></i> Features</h4>
+            <ul>
+              <li>✨ Personalized travel schedules</li>
+              <li>🎯 Preference-based activity recommendations</li>
+              <li>👥 Travel companion matching</li>
+              <li>📅 Day-by-day itinerary planning</li>
+              <li>🎨 Modern and user-friendly interface</li>
+            </ul>
+
+            <h4 class="mt-5 mb-3"><i class="fas fa-heart"></i> Why Travel Mate AI?</h4>
+            <p>
+              Planning a trip can be overwhelming. Travel Mate AI simplifies the process by using 
+              artificial intelligence to create customized travel plans that match your interests 
+              and preferences. Whether you're looking for adventure, relaxation, or cultural 
+              experiences, we've got you covered!
+            </p>
+
+            <div class="text-center mt-5">
+              <a href="/" class="btn btn-primary btn-lg">
+                <i class="fas fa-plane"></i> Start Planning Your Trip
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-dark text-white text-center py-3 mt-5">
+    <p class="mb-0">&copy; 2025 Travel Mate AI. Your perfect travel companion.</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

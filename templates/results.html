@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Travel Plan - Travel Mate AI</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="bg-light">
+
+  <!-- Navigation Menu -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+      <a class="navbar-brand" href="/">
+        <i class="fas fa-globe-americas"></i> Travel Mate AI
+      </a>
+      <div class="navbar-nav ms-auto">
+        <a class="nav-link" href="/"><i class="fas fa-home"></i> Home</a>
+        <a class="nav-link" href="/about"><i class="fas fa-info-circle"></i> About</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mt-5 mb-5">
+    <!-- Header -->
+    <div class="text-center mb-5">
+      <h1 class="display-4 mb-3 text-dark">
+        <i class="fas fa-map-marked-alt text-primary"></i> Your Travel Plan
+      </h1>
+      <p class="lead text-muted">Your personalized itinerary is ready!</p>
+    </div>
+
+    <!-- Travel Summary Card -->
+    <div class="card shadow-lg mb-5">
+      <div class="card-header bg-primary text-white">
+        <h3 class="mb-0"><i class="fas fa-info-circle"></i> Trip Summary</h3>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-12 mb-3">
+            <p class="fs-4 mb-0">
+              <strong><i class="fas fa-map-marker-alt text-danger"></i> Destination:</strong> 
+              <span class="text-primary">{{ city }}{% if country %}, {{ country }}{% endif %}</span>
+            </p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6">
+            <p><strong><i class="fas fa-calendar"></i> Start Date:</strong> {{ start_date }}</p>
+            <p><strong><i class="fas fa-calendar-check"></i> End Date:</strong> {{ end_date }}</p>
+          </div>
+          <div class="col-md-6">
+            <p><strong><i class="fas fa-heart"></i> Preferences:</strong></p>
+            <div class="d-flex flex-wrap gap-2">
+              {% for pref in preferences %}
+              <span class="badge bg-secondary fs-6">{{ pref }}</span>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Travel Schedule Table -->
+    <div class="card shadow-lg mb-5">
+      <div class="card-header bg-success text-white">
+        <h3 class="mb-0"><i class="fas fa-calendar-alt"></i> Your Travel Schedule for {{ city }}{% if country %}, {{ country }}{% endif %}</h3>
+        <p class="mb-0 mt-2 small">Drag, edit, or add activities to make this itinerary truly yours.</p>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover table-bordered mb-0 align-middle">
+            <thead class="table-dark">
+              <tr>
+                <th style="width: 10%;"><i class="fas fa-hashtag"></i> Day</th>
+                <th style="width: 20%;"><i class="fas fa-calendar"></i> Date</th>
+                <th style="width: 70%;"><i class="fas fa-clock"></i> 24-Hour Activity Timeline</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if schedule %}
+                {% for day in schedule %}
+                <tr>
+                  <td class="fw-bold text-center">Day {{ day.day }}</td>
+                  <td>{{ day.date_formatted }}</td>
+                  <td>
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                      <div class="small text-muted">
+                        Drag activities between time slots, edit descriptions, or add brand new experiences.
+                      </div>
+                      <div>
+                        <button class="btn btn-sm btn-outline-light add-activity-btn" 
+                                data-day="{{ day.day }}" data-date="{{ day.date_formatted }}">
+                          <i class="fas fa-plus-circle"></i> Add Activity
+                        </button>
+                      </div>
+                    </div>
+                    <div class="timeline-table" id="timeline-container-{{ day.day }}">
+                      <table class="table table-sm table-borderless mb-0">
+                        <tbody id="timeline-body-{{ day.day }}">
+                          {% if day.timeline %}
+                            {% for slot in day.timeline %}
+                            <tr class="timeline-row" draggable="true"
+                                data-day="{{ day.day }}"
+                                data-slot-id="{{ slot.id }}">
+                              <td class="text-muted fw-semibold time-cell" style="width: 15%;">{{ slot.time }}</td>
+                              <td class="activity-cell">
+                                <div class="activity-main d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                  <div class="activity-title fw-bold">{{ slot.title }}</div>
+                                  <div class="activity-rating text-warning">
+                                    <i class="fas fa-star"></i> {{ slot.rating }} 
+                                    <span class="text-muted small">({{ slot.reviews }} reviews)</span>
+                                  </div>
+                                </div>
+                                <p class="activity-description text-muted mb-2">{{ slot.description }}</p>
+                                <div class="activity-meta d-flex align-items-center flex-wrap gap-3 mb-2">
+                                  <span class="badge bg-light text-dark">{{ slot.category }}</span>
+                                  {% if slot.link %}
+                                  <a href="{{ slot.link }}" target="_blank" class="activity-link text-decoration-none">
+                                    <i class="fas fa-map-marker-alt text-danger"></i> View on {{ slot.rating_source }}
+                                  </a>
+                                  {% endif %}
+                                </div>
+                                <div class="timeline-actions d-flex gap-2">
+                                  <button class="btn btn-sm btn-outline-primary edit-activity" data-slot-id="{{ slot.id }}">
+                                    <i class="fas fa-pen"></i> Edit
+                                  </button>
+                                  <button class="btn btn-sm btn-outline-danger delete-activity" data-slot-id="{{ slot.id }}">
+                                    <i class="fas fa-trash"></i> Delete
+                                  </button>
+                                  <button class="btn btn-sm btn-outline-secondary drag-handle" title="Drag to another time">
+                                    <i class="fas fa-arrows-alt"></i> Drag
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                            {% endfor %}
+                          {% else %}
+                            <tr>
+                              <td colspan="2" class="text-muted">No detailed timeline available.</td>
+                            </tr>
+                          {% endif %}
+                        </tbody>
+                      </table>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="3" class="text-center text-muted">No schedule generated. Please check your dates.</td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Matching Users Section (only if traveling alone) -->
+    {% if travel_alone == 'yes' and matching_users %}
+    <div class="card shadow-lg mb-5">
+      <div class="card-header bg-info text-white">
+        <h3 class="mb-0">
+          <i class="fas fa-users"></i> Travel Companions Available
+        </h3>
+        <p class="mb-0 mt-2 small">These travelers are looking to join solo travelers like you!</p>
+      </div>
+      <div class="card-body">
+        <div class="row g-4">
+          {% for user in matching_users %}
+          <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm">
+              <div class="card-body text-center">
+                <img src="{{ user.avatar }}" alt="{{ user.name }}" class="rounded-circle mb-3" width="100" height="100">
+                <h5 class="card-title">{{ user.name }}</h5>
+                <p class="text-muted mb-2">
+                  <i class="fas fa-user"></i> {{ user.gender }} | 
+                  <i class="fas fa-map-marker-alt"></i> {{ user.country }} | 
+                  <i class="fas fa-birthday-cake"></i> {{ user.age }}
+                </p>
+                <p class="mb-2">
+                  <span class="badge bg-primary">{{ user.interest }}</span>
+                </p>
+                <p class="card-text small text-muted">{{ user.bio }}</p>
+                <button class="btn btn-sm btn-outline-primary">
+                  <i class="fas fa-envelope"></i> Contact
+                </button>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Action Buttons -->
+    <div class="text-center mb-5">
+      <a href="/" class="btn btn-primary btn-lg me-3">
+        <i class="fas fa-plus"></i> Plan Another Trip
+      </a>
+      <button class="btn btn-success btn-lg" onclick="window.print()">
+        <i class="fas fa-print"></i> Print Itinerary
+      </button>
+    </div>
+  </div>
+
+  <!-- Activity Modal -->
+  <div class="modal fade" id="activityModal" tabindex="-1" aria-labelledby="activityModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <form id="activity-form">
+          <div class="modal-header">
+            <h5 class="modal-title" id="activityModalLabel"><i class="fas fa-plus-circle"></i> Add Custom Activity</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label">Day</label>
+                <select class="form-select" id="modal-day" required>
+                  {% for day in schedule %}
+                  <option value="{{ day.day }}">Day {{ day.day }} - {{ day.date_formatted }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Time</label>
+                <input type="time" class="form-control" id="modal-time" required>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Rating</label>
+                <input type="number" min="1" max="5" step="0.1" class="form-control" id="modal-rating" value="4.6" required>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Activity Title</label>
+                <input type="text" class="form-control" id="modal-title" placeholder="e.g., Sunset cruise on the river" required>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Short Description</label>
+                <textarea class="form-control" id="modal-description" rows="3" placeholder="Describe what makes this activity special." required></textarea>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Link (optional)</label>
+                <input type="url" class="form-control" id="modal-link" placeholder="https://www.google.com/maps/...">
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Add Activity</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-dark text-white text-center py-3 mt-5">
+    <p class="mb-0">&copy; 2025 Travel Mate AI. Your perfect travel companion.</p>
+  </footer>
+
+  <script id="schedule-meta" type="application/json">
+    {{ {
+      "startTime": activity_start_time or '08:00',
+      "endTime": activity_end_time or '22:00',
+      "interval": activity_interval or 3
+    } | tojson }}
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const scheduleMetaEl = document.getElementById('schedule-meta');
+      let scheduleConfig = { startTime: "08:00", endTime: "22:00", interval: 3 };
+      if (scheduleMetaEl) {
+        try {
+          scheduleConfig = JSON.parse(scheduleMetaEl.textContent);
+        } catch (err) {
+          console.warn('Unable to parse schedule metadata. Falling back to defaults.', err);
+        }
+      }
+
+      const activityModalEl = document.getElementById('activityModal');
+      const activityModal = activityModalEl ? new bootstrap.Modal(activityModalEl) : null;
+      const activityForm = document.getElementById('activity-form');
+      const modalDay = document.getElementById('modal-day');
+      const modalTime = document.getElementById('modal-time');
+      const modalTitle = document.getElementById('modal-title');
+      const modalDesc = document.getElementById('modal-description');
+      const modalLink = document.getElementById('modal-link');
+      const modalRating = document.getElementById('modal-rating');
+
+      if (modalTime) {
+        modalTime.value = scheduleConfig.startTime;
+      }
+
+      let draggedRow = null;
+
+      document.addEventListener('dragstart', function(event) {
+        const row = event.target.closest('.timeline-row');
+        if (!row) return;
+        draggedRow = row;
+        row.classList.add('dragging');
+        event.dataTransfer.effectAllowed = 'move';
+      });
+
+      document.addEventListener('dragend', function(event) {
+        const row = event.target.closest('.timeline-row');
+        if (row) {
+          row.classList.remove('dragging');
+        }
+        draggedRow = null;
+      });
+
+      document.addEventListener('dragover', function(event) {
+        if (event.target.closest('.timeline-row')) {
+          event.preventDefault();
+        }
+      });
+
+      document.addEventListener('drop', function(event) {
+        const targetRow = event.target.closest('.timeline-row');
+        if (!targetRow || !draggedRow || targetRow === draggedRow) {
+          return;
+        }
+        event.preventDefault();
+        swapActivityCells(draggedRow, targetRow);
+      });
+
+      function swapActivityCells(rowA, rowB) {
+        const cellA = rowA.querySelector('.activity-cell');
+        const cellB = rowB.querySelector('.activity-cell');
+        if (!cellA || !cellB) return;
+        const tempHTML = cellA.innerHTML;
+        cellA.innerHTML = cellB.innerHTML;
+        cellB.innerHTML = tempHTML;
+
+        const tempId = rowA.dataset.slotId;
+        rowA.dataset.slotId = rowB.dataset.slotId;
+        rowB.dataset.slotId = tempId;
+      }
+
+      document.querySelectorAll('.add-activity-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const day = btn.dataset.day;
+          if (modalDay) modalDay.value = day;
+          if (activityModal) activityModal.show();
+        });
+      });
+
+      document.addEventListener('click', function(event) {
+        const editBtn = event.target.closest('.edit-activity');
+        const deleteBtn = event.target.closest('.delete-activity');
+
+        if (editBtn) {
+          event.preventDefault();
+          toggleEditMode(editBtn);
+        }
+
+        if (deleteBtn) {
+          event.preventDefault();
+          const row = deleteBtn.closest('.timeline-row');
+          if (row && confirm('Remove this activity from the schedule?')) {
+            row.remove();
+          }
+        }
+      });
+
+      function toggleEditMode(button) {
+        const row = button.closest('.timeline-row');
+        if (!row) return;
+        const titleEl = row.querySelector('.activity-title');
+        const descEl = row.querySelector('.activity-description');
+        if (!titleEl || !descEl) return;
+
+        const isEditing = row.classList.contains('editing');
+        if (!isEditing) {
+          row.classList.add('editing');
+          button.innerHTML = '<i class="fas fa-save"></i> Save';
+          button.classList.remove('btn-outline-primary');
+          button.classList.add('btn-primary');
+          titleEl.dataset.original = titleEl.textContent.trim();
+          descEl.dataset.original = descEl.textContent.trim();
+          titleEl.contentEditable = true;
+          descEl.contentEditable = true;
+          titleEl.focus();
+
+          let cancelBtn = row.querySelector('.cancel-edit');
+          if (!cancelBtn) {
+            cancelBtn = document.createElement('button');
+            cancelBtn.type = 'button';
+            cancelBtn.className = 'btn btn-sm btn-outline-secondary cancel-edit';
+            cancelBtn.innerHTML = '<i class="fas fa-times"></i> Cancel';
+            row.querySelector('.timeline-actions').appendChild(cancelBtn);
+          }
+
+          cancelBtn.addEventListener('click', () => {
+            titleEl.textContent = titleEl.dataset.original;
+            descEl.textContent = descEl.dataset.original;
+            exitEditMode(row, button);
+          }, { once: true });
+        } else {
+          exitEditMode(row, button);
+        }
+      }
+
+      function exitEditMode(row, button) {
+        const titleEl = row.querySelector('.activity-title');
+        const descEl = row.querySelector('.activity-description');
+        if (titleEl) titleEl.contentEditable = false;
+        if (descEl) descEl.contentEditable = false;
+        row.classList.remove('editing');
+        button.innerHTML = '<i class="fas fa-pen"></i> Edit';
+        button.classList.add('btn-outline-primary');
+        button.classList.remove('btn-primary');
+        const cancelBtn = row.querySelector('.cancel-edit');
+        if (cancelBtn) cancelBtn.remove();
+      }
+
+      if (activityForm) {
+        activityForm.addEventListener('submit', function(event) {
+          event.preventDefault();
+          const day = modalDay.value;
+          const time = modalTime.value || scheduleConfig.startTime;
+          const title = modalTitle.value.trim();
+          const description = modalDesc.value.trim();
+          const link = modalLink.value.trim();
+          const rating = modalRating.value || '4.5';
+          if (!day || !time || !title || !description) return;
+
+          const newRow = buildTimelineRow({ day, time, title, description, link, rating });
+          const tbody = document.getElementById(`timeline-body-${day}`);
+          if (tbody) {
+            insertRowByTime(tbody, newRow, time);
+          }
+          activityForm.reset();
+          modalTime.value = scheduleConfig.startTime;
+          modalRating.value = '4.6';
+          if (activityModal) activityModal.hide();
+        });
+      }
+
+      function buildTimelineRow({ day, time, title, description, link, rating }) {
+        const row = document.createElement('tr');
+        row.className = 'timeline-row';
+        row.setAttribute('draggable', 'true');
+        row.dataset.day = day;
+        row.dataset.slotId = `custom-${Date.now()}`;
+        row.innerHTML = `
+          <td class="text-muted fw-semibold time-cell" style="width: 15%;">${time}</td>
+          <td class="activity-cell">
+            <div class="activity-main d-flex align-items-center justify-content-between flex-wrap gap-2">
+              <div class="activity-title fw-bold">${title}</div>
+              <div class="activity-rating text-warning">
+                <i class="fas fa-star"></i> ${Number(rating).toFixed(1)}
+                <span class="text-muted small">(custom)</span>
+              </div>
+            </div>
+            <p class="activity-description text-muted mb-2">${description}</p>
+            <div class="activity-meta d-flex align-items-center flex-wrap gap-3 mb-2">
+              <span class="badge bg-light text-dark">Custom</span>
+              ${link ? `<a href="${link}" target="_blank" class="activity-link text-decoration-none">
+                  <i class="fas fa-map-marker-alt text-danger"></i> View link
+                </a>` : ''}
+            </div>
+            <div class="timeline-actions d-flex gap-2">
+              <button class="btn btn-sm btn-outline-primary edit-activity"><i class="fas fa-pen"></i> Edit</button>
+              <button class="btn btn-sm btn-outline-danger delete-activity"><i class="fas fa-trash"></i> Delete</button>
+              <button class="btn btn-sm btn-outline-secondary drag-handle"><i class="fas fa-arrows-alt"></i> Drag</button>
+            </div>
+          </td>
+        `;
+        return row;
+      }
+
+      function insertRowByTime(tbody, row, time) {
+        const newMinutes = timeToMinutes(time);
+        const existingRows = Array.from(tbody.querySelectorAll('.timeline-row'));
+        const targetRow = existingRows.find(r => timeToMinutes(r.querySelector('.time-cell').textContent.trim()) > newMinutes);
+        if (targetRow) {
+          tbody.insertBefore(row, targetRow);
+        } else {
+          tbody.appendChild(row);
+        }
+      }
+
+      function timeToMinutes(time) {
+        const [h, m] = time.split(':').map(Number);
+        return h * 60 + (m || 0);
+      }
+    });
+  </script>
+</body>
+</html>
